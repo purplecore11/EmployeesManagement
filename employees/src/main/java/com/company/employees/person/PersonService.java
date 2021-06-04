@@ -16,7 +16,16 @@ public class PersonService {
 	}
 
 	public Person getPerson(String id) {
-		return repository.findById(id).get();
+		Person person = null;
+		
+		try {
+			person = repository.findById(id).get();
+		}
+		catch(Exception e) {
+			person = new Person();
+		}
+		
+		return person;
 	}
 
 	public void addPerson(Person person) {

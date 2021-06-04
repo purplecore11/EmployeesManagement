@@ -2,6 +2,7 @@ package com.company.employees.employee;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -39,7 +40,16 @@ public class EmployeeService {
 	 * @return
 	 */
 	public Employee getEmployeeById(String id) {
-		return repository.findById(id).get();
+		Employee employee = null;
+		
+		try {
+			employee = repository.findById(id).get();
+		}
+		catch(Exception e) {
+			employee = new Employee();
+		}
+		
+		return employee;
 	}
 
 	/**

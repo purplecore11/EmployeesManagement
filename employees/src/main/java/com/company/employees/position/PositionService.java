@@ -16,7 +16,16 @@ public class PositionService {
 	}
 
 	public Position getPosition(String id) {
-		return repository.findById(id).get();
+		Position position = null;
+		
+		try {
+			position = repository.findById(id).get();
+		}
+		catch(Exception e) {
+			position = new Position();
+		}
+		
+		return position;
 	}
 
 	public void addPosition(Position position) {
