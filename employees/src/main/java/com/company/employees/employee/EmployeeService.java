@@ -2,12 +2,12 @@ package com.company.employees.employee;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import com.company.employees.person.Person;
 import com.company.employees.person.PersonRepository;
 import com.company.employees.position.Position;
 import com.company.employees.position.PositionRepository;
@@ -40,14 +40,10 @@ public class EmployeeService {
 	 * @return
 	 */
 	public Employee getEmployeeById(String id) {
-		Employee employee = null;
+		Employee employee = repository.getOne(Long.valueOf(id));
 		
-		try {
-			employee = repository.findById(id).get();
-		}
-		catch(Exception e) {
+		if(employee == null) 
 			employee = new Employee();
-		}
 		
 		return employee;
 	}
@@ -76,20 +72,24 @@ public class EmployeeService {
 	 */
 	public void addEmployee(Employee employee) {
 		//If person already exists, returns
-		if(!personRepository.existsById(employee.getPerson().getId()))
+		if(personRepository.getByWholeName(employee.getPerson().getName(), 
+			employee.getPerson().getLastName()).size() == 0) 
+		{
 			personRepository.save(employee.getPerson());
+		}
 		else 
 			return;
-
-		//If position already exists, it is not created
-		if(!positionRepository.existsById(employee.getPosition().getId()))
+		
+		//Get the positions with the same name
+		List<Position> positions = positionRepository.findByName(
+				employee.getPosition().getName());
+		
+		if(positions.size() == 0)//If position doesn't exist is created
 			positionRepository.save(employee.getPosition());
+		else //If position already exists, it is not created and it is set to employee object
+			employee.setPosition(positions.get(0));
 
-		//If employee already exists, returns
-		if(!repository.existsById(employee.getId()))
-			repository.save(employee);
-		else 
-			return;
+		repository.save(employee);
 	}
 
 	/**
@@ -98,11 +98,37 @@ public class EmployeeService {
 	 * @param employee
 	 */
 	public void updateEmployee(String id, Employee employee) {
-		personRepository.save(employee.getPerson());
+
+		//Employee doesn't exist
+		if(repository.getOne(Long.valueOf(id)) == null)
+			return;
 		
-		if(!positionRepository.existsById(employee.getPosition().getId()))
-			positionRepository.save(employee.getPosition());
+		//Updates person
+		List<Person> people = personRepository.getByWholeName(employee.getPerson().getName(), 
+				employee.getPerson().getLastName());
 		
+		//Person doesn't exist
+		if (people.size() == 0)
+			return;
+
+		Person p = employee.getPerson();
+		p.setId(people.get(0).getId());
+
+		personRepository.save(p);
+
+		
+		//Updates position
+		List<Position> positions = positionRepository.findByName(
+				employee.getPosition().getName());
+
+		Position position = employee.getPosition();
+		
+		if(positions.size() != 0)//If position already exists, it is not created and it is set to employee object
+			position.setId(positions.get(0).getId());
+
+		positionRepository.save(position);
+
+		employee.setId(Long.valueOf(id));
 		repository.save(employee);
 	}
 
@@ -111,9 +137,14 @@ public class EmployeeService {
 	 * @param id
 	 */
 	public void removeEmployee(String id) {
-		Employee employee = repository.getOne(id);
+
+		Employee employee = repository.getOne(Long.valueOf(id));
 		
-		repository.deleteById(id);
+		//Employee doesn't exist
+		if(employee == null)
+			return;
+		
+		repository.deleteById(Long.valueOf(id));
 
 		personRepository.deleteById(employee.getPerson().getId());
 	}
@@ -143,7 +174,7 @@ public class EmployeeService {
 	private List<JSONObject> formatPositionsEmployeesOutput(List<Employee> employees) {
 		
 		Position position = null;
-		String previousPositionId = "";
+		Long previousPositionId = 0L;
 		List<JSONObject> jsonEmployees = null;
 		JSONObject json = null;
 		List<JSONObject> jsonPositions = new ArrayList<JSONObject>();
@@ -151,7 +182,7 @@ public class EmployeeService {
 		for(Employee employee: employees) {
 			position = employee.getPosition();
 			
-			if(!previousPositionId.equals(position.getId())) {
+			if(previousPositionId != position.getId()) {
 				
 				if(jsonEmployees != null) {
 					json.put("employees", jsonEmployees);
@@ -177,6 +208,5 @@ public class EmployeeService {
 		
 		return jsonPositions;
 	}
-
 
 }

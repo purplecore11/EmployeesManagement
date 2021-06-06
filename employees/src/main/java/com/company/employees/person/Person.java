@@ -1,6 +1,9 @@
 package com.company.employees.person;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 import net.minidev.json.JSONObject;
@@ -8,9 +11,10 @@ import net.minidev.json.JSONObject;
 @Entity
 public class Person {
 	
-	@Id
-	private String id;
+	@Id @GeneratedValue(strategy=GenerationType.IDENTITY)
+	private Long id;
 	private String name;
+	@Column(name = "LASTNAME")
 	private String lastName;
 	private String address;
 	private String cellphone;
@@ -19,8 +23,7 @@ public class Person {
 	public Person() {
 	}
 
-	public Person(String id, String name, String lastName, String address, String cellphone, String cityName) {
-		this.id = id;
+	public Person(String name, String lastName, String address, String cellphone, String cityName) {
 		this.name = name;
 		this.lastName = lastName;
 		this.address = address;
@@ -28,10 +31,10 @@ public class Person {
 		this.cityName = cityName;
 	}
 	
-	public String getId() {
+	public Long getId() {
 		return id;
 	}
-	public void setId(String id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 	public String getName() {

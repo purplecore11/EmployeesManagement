@@ -1,6 +1,8 @@
 package com.company.employees.employee;
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
 
@@ -12,8 +14,8 @@ import net.minidev.json.JSONObject;
 @Entity
 public class Employee {
 	
-	@Id
-	private String id;
+	@Id @GeneratedValue(strategy=GenerationType.IDENTITY)
+	private Long id;
 	
 	@OneToOne
 	private Person person;
@@ -24,21 +26,18 @@ public class Employee {
 	private Long salary;
 	
 	public Employee() {
-		
 	}
 	
-	
-	public Employee(String id, Person person, Position position, Long salary) {
-		this.id = id;
+	public Employee(Person person, Position position, Long salary) {
 		this.person = person;
 		this.position = position;
 		this.salary = salary;
 	}
 
-	public String getId() {
+	public Long getId() {
 		return id;
 	}
-	public void setId(String id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 	public Person getPerson() {
